@@ -36,6 +36,7 @@ struct PLUGIN_OPTIONS
     bool bConfirm;
     ulong ulMinFuncLen;
     ulong ulReverseSize;
+    char szAlwaysOutPath[255];
 
     PLUGIN_OPTIONS()
     {
@@ -44,6 +45,7 @@ struct PLUGIN_OPTIONS
         bConfirm = true;
         ulMinFuncLen = NON_AUTO_FUNCTIONS;
         ulReverseSize = DEF_REVERSE_SIZE;
+        szAlwaysOutPath[0] = '\0';
     }
 };
 

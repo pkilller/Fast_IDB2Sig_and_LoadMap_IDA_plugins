@@ -674,14 +674,24 @@ static FILE* get_pat_file(void)
     if ('\0' == g_szPatFile[0])
     {
         /* First run */
-	char buf[512];
-		get_input_file_path(buf, sizeof buf);
+	   char buf[512];
+
+        // option is null, show save dialog
+    	get_input_file_path(buf, sizeof buf);
         strncpy(g_szPatFile, buf, countof(g_szPatFile));
         _VERIFY(PathRenameExtension(g_szPatFile, ".pat"));
     }
 
+
+	msg("g_options.szAlwaysOutPath:%s", g_options.szAlwaysOutPath);
+    if (g_options.szAlwaysOutPath[0] == '\0')
+    {
 AskFile:
-    filename = askfile_c(1, g_szPatFile, "Enter the name of the pattern file:");
+		filename = askfile_c(1, g_szPatFile, "Enter the name of the pattern file:");
+	} else {
+        // option is valid
+        filename = g_options.szAlwaysOutPath;
+    }
     if (NULL == filename)
     {
         (void) msg("IDB2SIG: User chose cancel.\n");
@@ -855,7 +865,14 @@ static void ShowOptionsDlg(void)
         "lines in memory before writing to disk. Default and minimum is 10 MB.\n"
         "If an exception occur, please increase this size. Otherwise,\n"
         "if and an out of memory occur, please decrease this size.#"
-        "Size Of Virtual Memory Reversing (in MB)  :D:8:::>\n\n";       // text9
+        "Size Of Virtual Memory Reversing (in MB)  :D:8:::>\n\n"
+
+        // Always output the .pat file to:
+		"<## Always output the .pat file to  :A:255:::>\n\n"
+        ;       // text9
+
+
+
 
     // Create the option dialog.
     short mode = (short) g_options.funcMode;
@@ -870,7 +887,8 @@ static void ShowOptionsDlg(void)
     }
     long len = (long) g_options.ulMinFuncLen;
     long size = (long) g_options.ulReverseSize;
-    if (AskUsingForm_c(format, &mode, &chkMask, &len, &size))
+    char *pAlwaysOutPath = g_options.szAlwaysOutPath;
+    if (AskUsingForm_c(format, &mode, &chkMask, &len, &size, pAlwaysOutPath))
     {
         g_options.funcMode = (FUNCTION_MODE) mode;
         g_options.bPatAppend = ((chkMask & 1) != 0);
@@ -919,6 +937,7 @@ static int idaapi init(void)
     g_options.funcMode = min(FUNCTION_MODE_MAX, max(FUNCTION_MODE_MIN, g_options.funcMode));
     g_options.ulMinFuncLen = max(DEF_MIN_FUNC_LENGTH, g_options.ulMinFuncLen);
     g_options.ulReverseSize = max(DEF_REVERSE_SIZE, g_options.ulReverseSize);
+    // g_options.szAlwaysOutPath = g_options.szAlwaysOutPath;
 
     return PLUGIN_KEEP;
 }
